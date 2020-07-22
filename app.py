@@ -53,11 +53,13 @@ You might try some of these examples times in the H1 detector:
 
 
 # Create a text element and let the reader know the data is loading.
-strain_load_state = st.text('Loading data...')
+strain_load_state = st.text('Loading data...this may take a minute')
 strain = load_gw(t0, detector)
 strain_load_state.text('Loading data...done!')
 
 #-- Make a time series plot    
+
+st.markdown('### Raw data')
 center = int(t0)
 strain = strain.crop(center-16, center+16)
 fig1 = strain.plot()
@@ -67,7 +69,7 @@ st.pyplot(fig1)
 
 # -- Try whitened and band-passed plot
 # -- Whiten and bandpass data
-st.subheader('Whitened Data')
+st.subheader('Whitened and Bandbassed Data')
 white_data = strain.whiten()
 bp_data = white_data.bandpass(30, 400)
 fig3 = bp_data.plot()
@@ -77,15 +79,20 @@ st.pyplot(fig3)
 st.subheader('Q-transform')
 
 st.sidebar.markdown('## Q-Transform Controls')
-dt = st.sidebar.slider('Time Range', 0.1, 4.0, 1.0)  # min, max, default
+dt = st.sidebar.slider('Time Range (s)', 0.1, 4.0, 1.0)  # min, max, default
+vmax = st.sidebar.slider('Colorbar Max Energy', 10, 500, 25)  # min, max, default
+
+qcenter = st.sidebar.slider('Q-value', 5, 120, 5)  # min, max, default
+qrange = (int(qcenter*0.8), int(qcenter*1.2))
 
 # dt = 1  #-- Set width of q-transform plot, in seconds
-hq = strain.q_transform(outseg=(t0-dt, t0+dt))
+hq = strain.q_transform(outseg=(t0-dt, t0+dt), qrange=qrange)
 fig4 = hq.plot()
 ax = fig4.gca()
-fig4.colorbar(label="Normalised energy")
+fig4.colorbar(label="Normalised energy", vmax=vmax, vmin=0)
 ax.grid(False)
 ax.set_yscale('log')
+ax.set_ylim(15,1500)
 st.pyplot(fig4)
 
 
