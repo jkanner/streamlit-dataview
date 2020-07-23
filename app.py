@@ -14,20 +14,23 @@ st.title('GWpy Plotting App')
 
 @st.cache   #-- Magic command to cache data
 def load_gw(t0, detector):
-    url = get_urls(detector, t0, t0)[-1]
-    print(url)
-    fn = os.path.basename(url)
-    with open(fn,'wb') as strainfile:                 
-        straindata = requests.get(url)
-        strainfile.write(straindata.content)
+
+    # Commented out code for alternate way to access data
+    #url = get_urls(detector, t0, t0)[-1]
+    #print(url)
+    #fn = os.path.basename(url)
+    
+    #with open(fn,'wb') as strainfile:                 
+    #    straindata = requests.get(url)
+    #    strainfile.write(straindata.content)
 
     # -- Read strain data
-    strain = TimeSeries.read(fn,format='hdf5.losc')
+    # strain = TimeSeries.read(fn,format='hdf5.losc')
 
     # -- Clean-up temporary file
-    os.remove(fn)
+    # os.remove(fn)
     
-    #strain = TimeSeries.fetch_open_data(detector, t0-16, t0+16)
+    strain = TimeSeries.fetch_open_data(detector, t0-16, t0+16, cache=False)
     return strain
 
 
@@ -41,7 +44,7 @@ str_t0 = st.sidebar.text_input('GPS Time', '1126259462.4')    # -- GW150914
 t0 = float(str_t0)
 
 st.sidebar.markdown("""
-You might try some of these examples times in the H1 detector:
+Try these example times in the H1 detector:
  * 1126259462.4    (GW150914) 
  * 1187008882.4    (GW170817) 
  * 933200215       (hardware injection)
@@ -92,7 +95,7 @@ ax = fig4.gca()
 fig4.colorbar(label="Normalised energy", vmax=vmax, vmin=0)
 ax.grid(False)
 ax.set_yscale('log')
-ax.set_ylim(15,1500)
+ax.set_ylim(bottom=15)
 st.pyplot(fig4)
 
 
