@@ -66,6 +66,7 @@ try:
     strain = load_gw(t0, detector)
 except:
     st.text('Data load failed.  Try a different time and detector pair.')
+    st.text('Problems can be reported to gwosc@igwn.org')
     raise st.ScriptRunner.StopException
     
 strain_load_state.text('Loading data...done!')
