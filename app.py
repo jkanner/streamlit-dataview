@@ -70,13 +70,17 @@ except:
     
 strain_load_state.text('Loading data...done!')
 
-#-- Make a time series plot    
+#-- Make a time series plot
+
+cropstart = t0-0.2
+cropend   = t0+0.1
 
 st.subheader('Raw data')
 center = int(t0)
 strain = strain.crop(center-16, center+16)
-fig1 = strain.plot()
-st.pyplot(fig1)
+fig1 = strain.crop(cropstart, cropend).plot()
+#fig1 = cropped.plot()
+st.pyplot(fig1, clear_figure=True)
 
 
 # -- Try whitened and band-passed plot
@@ -84,9 +88,8 @@ st.pyplot(fig1)
 st.subheader('Whitened and Bandbassed Data')
 white_data = strain.whiten()
 bp_data = white_data.bandpass(30, 400)
-fig3 = bp_data.plot()
-plt.xlim(t0-0.2, t0+0.1)
-st.pyplot(fig3)
+fig3 = bp_data.crop(cropstart, cropend).plot()
+st.pyplot(fig3, clear_figure=True)
 
 st.subheader('Q-transform')
 
@@ -106,7 +109,7 @@ fig4.colorbar(label="Normalised energy", vmax=vmax, vmin=0)
 ax.grid(False)
 ax.set_yscale('log')
 ax.set_ylim(bottom=15)
-st.pyplot(fig4)
+st.pyplot(fig4, clear_figure=True)
 
 
 
