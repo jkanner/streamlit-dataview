@@ -33,13 +33,16 @@ def load_pe(url):
     open('pesamples.hdf5', 'wb').write(r.content)
     data = h5py.File('pesamples.hdf5')
     key0 = list(data.keys())[0]
-    st.write(key0)
+    
     try:
         dataarray = data['Overall_posterior'][()]
+        waveform = 'Overall_posterior'
     except:
         dataarray = data[key0][()]
+        waveform = key0
     data.close()
-    return dataarray
+    return dataarray, waveform
+
 
 st.sidebar.markdown("## Select Data Time and Detector")
 
@@ -70,23 +73,64 @@ except:
     
 strain_load_state.text('Loading data...done!')
 
+# -- Tell the user which event we are looking at
+st.markdown('## {}'.format(chosen_event))
+
+#-- Crop the data
+cropstart = t0-0.2
+cropend   = t0+0.1
+center = int(t0)
+strain = strain.crop(center-16, center+16)
+
+
+# -- Plot the whitened, band-passed data
+# -- Whiten and bandpass data
+st.subheader('Whitened and Bandbassed Data')
+white_data = strain.whiten()
+bp_data = white_data.bandpass(30, 400)
+fig3 = bp_data.crop(cropstart, cropend).plot()
+st.pyplot(fig3, clear_figure=True)
+
+# -- Make a Q-transform
+st.subheader('Q-transform')
+
+st.sidebar.markdown('## Q-Transform Controls')
+dtboth = st.sidebar.slider('Time Range (seconds)', 0.1, 8.0, 1.0)  # min, max, default
+dt = dtboth / 2.0
+vmax = st.sidebar.slider('Colorbar Max Energy', 10, 500, 25)  # min, max, default
+
+qcenter = st.sidebar.slider('Q-value', 5, 120, 5)  # min, max, default
+qrange = (int(qcenter*0.8), int(qcenter*1.2))
+
+
+hq = strain.q_transform(outseg=(t0-dt, t0+dt), qrange=qrange)
+fig4 = hq.plot()
+ax = fig4.gca()
+fig4.colorbar(label="Normalised energy", vmax=vmax, vmin=0)
+ax.grid(False)
+ax.set_yscale('log')
+ax.set_ylim(bottom=15)
+st.pyplot(fig4, clear_figure=True)
+
+
 #-- Try getting pe url
 jsoninfo = fetch_event_json(chosen_event, catalog='GWTC-1-confident')
 #st.write(jsoninfo)
-
 
 for name, nameinfo in jsoninfo['events'].items():
     for peset, peinfo in nameinfo['parameters'].items():
         if 'pe' in peset:
             sourceurl = peinfo['data_url']
             
-            
-
-st.markdown('## {}'.format(chosen_event))
-
+        
 st.write('PE samples URL: ', sourceurl)
             
-pedata = load_pe(sourceurl)
+pedata, waveform = load_pe(sourceurl)
+
+st.write('Showing samples for {}'.format(waveform))
+
+
+
 #st.write('Got some samples')
 #st.write(pedata.dtype.names)
 paramlist = pedata.dtype.names
@@ -110,47 +154,6 @@ for param in paramlist:
     plt.close('all')
     
     
-
-#-- Make a time series plot
-
-cropstart = t0-0.2
-cropend   = t0+0.1
-
-st.subheader('Raw data')
-center = int(t0)
-strain = strain.crop(center-16, center+16)
-fig1 = strain.crop(cropstart, cropend).plot()
-#fig1 = cropped.plot()
-st.pyplot(fig1, clear_figure=True)
-
-
-# -- Try whitened and band-passed plot
-# -- Whiten and bandpass data
-st.subheader('Whitened and Bandbassed Data')
-white_data = strain.whiten()
-bp_data = white_data.bandpass(30, 400)
-fig3 = bp_data.crop(cropstart, cropend).plot()
-st.pyplot(fig3, clear_figure=True)
-
-st.subheader('Q-transform')
-
-st.sidebar.markdown('## Q-Transform Controls')
-dtboth = st.sidebar.slider('Time Range (seconds)', 0.1, 8.0, 1.0)  # min, max, default
-dt = dtboth / 2.0
-vmax = st.sidebar.slider('Colorbar Max Energy', 10, 500, 25)  # min, max, default
-
-qcenter = st.sidebar.slider('Q-value', 5, 120, 5)  # min, max, default
-qrange = (int(qcenter*0.8), int(qcenter*1.2))
-
-
-hq = strain.q_transform(outseg=(t0-dt, t0+dt), qrange=qrange)
-fig4 = hq.plot()
-ax = fig4.gca()
-fig4.colorbar(label="Normalised energy", vmax=vmax, vmin=0)
-ax.grid(False)
-ax.set_yscale('log')
-ax.set_ylim(bottom=15)
-st.pyplot(fig4, clear_figure=True)
 
 
 
