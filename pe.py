@@ -32,7 +32,6 @@ def load_pe(url):
     r = requests.get(url, allow_redirects=True)
     open('pesamples.hdf5', 'wb').write(r.content)
     data = h5py.File('pesamples.hdf5')
-    st.write(data.keys())
     key0 = list(data.keys())[0]
     st.write(key0)
     try:
