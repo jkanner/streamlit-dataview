@@ -8,7 +8,7 @@ from gwpy.timeseries import TimeSeries
 from gwosc.locate import get_urls
 from gwosc import datasets
 from gwosc.api import fetch_event_json
-
+import corner
 
 # -- Default detector list
 detectorlist = ['H1','L1', 'V1']
@@ -32,7 +32,15 @@ def load_pe(url):
     r = requests.get(url, allow_redirects=True)
     open('pesamples.hdf5', 'wb').write(r.content)
     data = h5py.File('pesamples.hdf5')
-    return data['Overall_posterior'][()]
+    st.write(data.keys())
+    key0 = list(data.keys())[0]
+    st.write(key0)
+    try:
+        dataarray = data['Overall_posterior'][()]
+    except:
+        dataarray = data[key0][()]
+    data.close()
+    return dataarray
 
 st.sidebar.markdown("## Select Data Time and Detector")
 
@@ -72,13 +80,27 @@ for name, nameinfo in jsoninfo['events'].items():
     for peset, peinfo in nameinfo['parameters'].items():
         if 'pe' in peset:
             sourceurl = peinfo['data_url']
-            st.write('URL: ', sourceurl)
             
-    
+            
+
+st.markdown('## {}'.format(chosen_event))
+
+st.write('PE samples URL: ', sourceurl)
+            
 pedata = load_pe(sourceurl)
-st.write('Got some samples')
-st.write(pedata.dtype.names)
+#st.write('Got some samples')
+#st.write(pedata.dtype.names)
 paramlist = pedata.dtype.names
+
+# -- Try a corner plot
+m_names = ['m1_detector_frame_Msun', 'm2_detector_frame_Msun']
+
+m1 = pedata['m1_detector_frame_Msun']
+m2 = pedata['m2_detector_frame_Msun']
+
+corner_data = np.array(list(zip(m1, m2))) 
+corner.corner(corner_data, labels=[r'$m_1 ~($M$_\odot)$', r'$m_2 ~($M$_\odot)$'], color='dodgerblue')
+st.pyplot()
 
 for param in paramlist:
 

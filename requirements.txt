@@ -2,3 +2,4 @@ streamlit
 gwpy
 matplotlib
 numpy
+corner
