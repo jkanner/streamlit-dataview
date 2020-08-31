@@ -21,6 +21,10 @@ st.markdown("""
  * Learn more at https://gw-openscience.org
 """)
 
+#-- Make data directory, if needed
+if not os.path.exists('./data'):
+    os.mkdir('./data')
+
 @st.cache   #-- Magic command to cache data
 def load_gw(t0, detector):
     strain = TimeSeries.fetch_open_data(detector, t0-16, t0+16, cache=False)
