@@ -26,7 +26,7 @@ def load_gw(t0, detector):
     strain = TimeSeries.fetch_open_data(detector, t0-16, t0+16, cache=False)
     return strain
 
-# @st.cache
+@st.cache
 def load_pe(url):
 
     # -- Try to read PE samples from disk
@@ -34,16 +34,11 @@ def load_pe(url):
     
     # -- Get file name
     fn = 'data/' + os.path.split(url)[1]
-    st.write('About to look for pe data')
     tries = 0 
     while tries < 3:
-        st.write('try number', tries)
         try:
-            st.write('Trying to open file')
             data = h5py.File(fn)
-            st.write('file is open')
             key0 = list(data.keys())[0]
-            st.write('opened data file, got keys', key0)
             try:
                 dataarray = data['Overall_posterior'][()]
                 waveform = 'Overall_posterior'
@@ -52,17 +47,14 @@ def load_pe(url):
                 dataarray = data[key0][()]
                 waveform = key0
                 break
-                
         except:
-            data.close()
-            st.write('failed to read file, attempting to download')
             tries += 1
+            data.close()
             # -- Download PE file
             r = requests.get(url, allow_redirects=True)
             with open(fn, 'wb') as newfile:
                 newfile.write(r.content)
             
-    
     data.close()
     return dataarray, waveform
 
