@@ -2,17 +2,19 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-
+import h5py
 import requests, os
 from gwpy.timeseries import TimeSeries
 from gwosc.locate import get_urls
 from gwosc import datasets
+from gwosc.api import fetch_event_json
+import corner
 
 # -- Default detector list
 detectorlist = ['H1','L1', 'V1']
 
 # Title the app
-st.title('Gravitational Wave Quickview App')
+st.title('Gravitational Wave Parameter Viewer')
 
 st.markdown("""
  * Use the controls at left to select data
@@ -24,37 +26,38 @@ def load_gw(t0, detector):
     strain = TimeSeries.fetch_open_data(detector, t0-16, t0+16, cache=False)
     return strain
 
+@st.cache
+def load_pe(url):
+    # -- Download PE file
+    r = requests.get(url, allow_redirects=True)
+    open('pesamples.hdf5', 'wb').write(r.content)
+    data = h5py.File('pesamples.hdf5')
+    key0 = list(data.keys())[0]
+    
+    try:
+        dataarray = data['Overall_posterior'][()]
+        waveform = 'Overall_posterior'
+    except:
+        dataarray = data[key0][()]
+        waveform = key0
+    data.close()
+    return dataarray, waveform
+
+
 st.sidebar.markdown("## Select Data Time and Detector")
 
 # -- Get list of events
 # find_datasets(catalog='GWTC-1-confident',type='events')
-eventlist = datasets.find_datasets(type='events')
+eventlist = datasets.find_datasets(type='events', catalog='GWTC-1-confident')
 eventlist = [name.split('-')[0] for name in eventlist if name[0:2] == 'GW']
 eventset = set([name for name in eventlist])
 eventlist = list(eventset)
 eventlist.sort()
 
-#-- Set time by GPS or event
-select_event = st.sidebar.selectbox('How do you want to find data?',
-                                    ['By event name', 'By GPS'])
 
-if select_event == 'By GPS':
-    # -- Set a GPS time:        
-    str_t0 = st.sidebar.text_input('GPS Time', '1126259462.4')    # -- GW150914
-    t0 = float(str_t0)
-
-    st.sidebar.markdown("""
-    Example times in the H1 detector:
-    * 1126259462.4    (GW150914) 
-    * 1187008882.4    (GW170817) 
-    * 933200215       (hardware injection)
-    * 1132401286.33   (Koi Fish Glitch) 
-    """)
-
-else:
-    chosen_event = st.sidebar.selectbox('Select Event', eventlist)
-    t0 = datasets.event_gps(chosen_event)
-    detectorlist = list(datasets.event_detectors(chosen_event))
+chosen_event = st.sidebar.selectbox('Select Event', eventlist)
+t0 = datasets.event_gps(chosen_event)
+detectorlist = list(datasets.event_detectors(chosen_event))
     
     
 #-- Choose detector as H1, L1, or V1
@@ -66,25 +69,21 @@ try:
     strain = load_gw(t0, detector)
 except:
     st.text('Data load failed.  Try a different time and detector pair.')
-    st.text('Problems can be reported to gwosc@igwn.org')
     raise st.ScriptRunner.StopException
     
 strain_load_state.text('Loading data...done!')
 
-#-- Make a time series plot
+# -- Tell the user which event we are looking at
+st.markdown('## {}'.format(chosen_event))
 
+#-- Crop the data
 cropstart = t0-0.2
 cropend   = t0+0.1
-
-st.subheader('Raw data')
 center = int(t0)
 strain = strain.crop(center-16, center+16)
-fig1 = strain.crop(cropstart, cropend).plot()
-#fig1 = cropped.plot()
-st.pyplot(fig1, clear_figure=True)
 
 
-# -- Try whitened and band-passed plot
+# -- Plot the whitened, band-passed data
 # -- Whiten and bandpass data
 st.subheader('Whitened and Bandbassed Data')
 white_data = strain.whiten()
@@ -92,6 +91,7 @@ bp_data = white_data.bandpass(30, 400)
 fig3 = bp_data.crop(cropstart, cropend).plot()
 st.pyplot(fig3, clear_figure=True)
 
+# -- Make a Q-transform
 st.subheader('Q-transform')
 
 st.sidebar.markdown('## Q-Transform Controls')
@@ -111,6 +111,49 @@ ax.grid(False)
 ax.set_yscale('log')
 ax.set_ylim(bottom=15)
 st.pyplot(fig4, clear_figure=True)
+
+
+#-- Try getting pe url
+jsoninfo = fetch_event_json(chosen_event, catalog='GWTC-1-confident')
+#st.write(jsoninfo)
+
+for name, nameinfo in jsoninfo['events'].items():
+    for peset, peinfo in nameinfo['parameters'].items():
+        if 'pe' in peset:
+            sourceurl = peinfo['data_url']
+            
+        
+st.write('PE samples URL: ', sourceurl)
+            
+pedata, waveform = load_pe(sourceurl)
+
+st.write('Showing samples for {}'.format(waveform))
+
+
+
+#st.write('Got some samples')
+#st.write(pedata.dtype.names)
+paramlist = pedata.dtype.names
+
+# -- Try a corner plot
+m_names = ['m1_detector_frame_Msun', 'm2_detector_frame_Msun']
+
+m1 = pedata['m1_detector_frame_Msun']
+m2 = pedata['m2_detector_frame_Msun']
+
+corner_data = np.array(list(zip(m1, m2))) 
+corner.corner(corner_data, labels=[r'$m_1 ~($M$_\odot)$', r'$m_2 ~($M$_\odot)$'], color='dodgerblue')
+st.pyplot()
+
+for param in paramlist:
+
+    plt.figure()
+    plt.hist(pedata[param], bins=50, density=True)
+    plt.xlabel(param)
+    st.pyplot()
+    plt.close('all')
+    
+    
 
 
 
