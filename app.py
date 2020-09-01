@@ -85,7 +85,7 @@ st.pyplot(fig1, clear_figure=True)
 
 # -- Try whitened and band-passed plot
 # -- Whiten and bandpass data
-st.subheader('Whitened and Bandbassed Data')
+st.subheader('Whitened and Bandpassed Data')
 white_data = strain.whiten()
 bp_data = white_data.bandpass(30, 400)
 fig3 = bp_data.crop(cropstart, cropend).plot()
