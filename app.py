@@ -55,7 +55,7 @@ else:
     chosen_event = st.sidebar.selectbox('Select Event', eventlist)
     t0 = datasets.event_gps(chosen_event)
     detectorlist = list(datasets.event_detectors(chosen_event))
-    
+    detectorlist.sort()
     
 #-- Choose detector as H1, L1, or V1
 detector = st.sidebar.selectbox('Detector', detectorlist)
