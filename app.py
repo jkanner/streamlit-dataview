@@ -7,6 +7,7 @@ import requests, os
 from gwpy.timeseries import TimeSeries
 from gwosc.locate import get_urls
 from gwosc import datasets
+from gwosc.api import fetch_event_json
 
 from copy import deepcopy
 
@@ -17,7 +18,7 @@ detectorlist = ['H1','L1', 'V1']
 st.title('Gravitational Wave Quickview App')
 
 st.markdown("""
- * Use the controls at left to select data
+ * Use the menu at left to select data and set plot parameters
  * Learn more at https://gw-openscience.org
 """)
 
@@ -58,12 +59,29 @@ else:
     t0 = datasets.event_gps(chosen_event)
     detectorlist = list(datasets.event_detectors(chosen_event))
     detectorlist.sort()
+    st.subheader(chosen_event)
+    
+    # -- Experiment to display masses
+    try:
+        jsoninfo = fetch_event_json(chosen_event)
+        for name, nameinfo in jsoninfo['events'].items():        
+            st.write('Mass 1:', nameinfo['mass_1_source'], 'M$_{\odot}$')
+            st.write('Mass 2:', nameinfo['mass_2_source'], 'M$_{\odot}$')
+            #st.write('Distance:', int(nameinfo['luminosity_distance']), 'Mpc')
+            st.write('Network SNR:', int(nameinfo['network_matched_filter_snr']))
+            eventurl = 'https://gw-osc.org/eventapi/html/event/{}'.format(chosen_event)
+            st.markdown('Event page: {}'.format(eventurl))
+            st.write('\n')
+    except:
+        pass
+
+
     
 #-- Choose detector as H1, L1, or V1
 detector = st.sidebar.selectbox('Detector', detectorlist)
 
 # -- Create sidebar for Q-transform controls
-st.sidebar.markdown('## Q-Transform Controls')
+st.sidebar.markdown('## Set Plot Parameters')
 dtboth = st.sidebar.slider('Time Range (seconds)', 0.1, 8.0, 1.0)  # min, max, default
 dt = dtboth / 2.0
 vmax = st.sidebar.slider('Colorbar Max Energy', 10, 500, 25)  # min, max, default
@@ -86,6 +104,9 @@ strain_load_state.text('Loading data...done!')
 
 cropstart = t0-0.2
 cropend   = t0+0.1
+
+cropstart = t0 - dt
+cropend   = t0 + dt
 
 st.subheader('Raw data')
 center = int(t0)
@@ -120,4 +141,8 @@ st.subheader("About this app")
 st.markdown("""
 This app displays data from LIGO, Virgo, and GEO downloaded from
 the Gravitational Wave Open Science Center at https://gw-openscience.org .
+
+
+You can see how this works in the [Quickview Jupyter Notebook](https://github.com/losc-tutorial/quickview)
+
 """)
