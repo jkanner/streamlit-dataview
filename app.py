@@ -67,9 +67,10 @@ else:
         for name, nameinfo in jsoninfo['events'].items():        
             st.write('Mass 1:', nameinfo['mass_1_source'], 'M$_{\odot}$')
             st.write('Mass 2:', nameinfo['mass_2_source'], 'M$_{\odot}$')
-            st.write('Distance:', int(nameinfo['luminosity_distance']), 'Mpc')
+            #st.write('Distance:', int(nameinfo['luminosity_distance']), 'Mpc')
+            st.write('Network SNR:', int(nameinfo['network_matched_filter_snr']))
             eventurl = 'https://gw-osc.org/eventapi/html/event/{}'.format(chosen_event)
-            st.markdown('See more at {}'.format(eventurl))
+            st.markdown('Event page: {}'.format(eventurl))
             st.write('\n')
     except:
         pass
