@@ -8,6 +8,8 @@ from gwpy.timeseries import TimeSeries
 from gwosc.locate import get_urls
 from gwosc import datasets
 
+from copy import deepcopy
+
 # -- Default detector list
 detectorlist = ['H1','L1', 'V1']
 
@@ -21,7 +23,7 @@ st.markdown("""
 
 @st.cache   #-- Magic command to cache data
 def load_gw(t0, detector):
-    strain = TimeSeries.fetch_open_data(detector, t0-16, t0+16, cache=False)
+    strain = TimeSeries.fetch_open_data(detector, t0-14, t0+14, cache=False)
     return strain
 
 st.sidebar.markdown("## Select Data Time and Detector")
@@ -61,7 +63,6 @@ else:
 detector = st.sidebar.selectbox('Detector', detectorlist)
 
 # -- Create sidebar for Q-transform controls
-st.subheader('Q-transform')
 st.sidebar.markdown('## Q-Transform Controls')
 dtboth = st.sidebar.slider('Time Range (seconds)', 0.1, 8.0, 1.0)  # min, max, default
 dt = dtboth / 2.0
@@ -73,7 +74,7 @@ qrange = (int(qcenter*0.8), int(qcenter*1.2))
 #-- Create a text element and let the reader know the data is loading.
 strain_load_state = st.text('Loading data...this may take a minute')
 try:
-    strain = load_gw(t0, detector)
+    strain_data = load_gw(t0, detector)
 except:
     st.text('Data load failed.  Try a different time and detector pair.')
     st.text('Problems can be reported to gwosc@igwn.org')
@@ -88,7 +89,7 @@ cropend   = t0+0.1
 
 st.subheader('Raw data')
 center = int(t0)
-strain = strain.crop(center-16, center+16)
+strain = deepcopy(strain_data)
 fig1 = strain.crop(cropstart, cropend).plot()
 #fig1 = cropped.plot()
 st.pyplot(fig1, clear_figure=True)
@@ -103,7 +104,7 @@ fig3 = bp_data.crop(cropstart, cropend).plot()
 st.pyplot(fig3, clear_figure=True)
 
 
-
+st.subheader('Q-transform')
 hq = strain.q_transform(outseg=(t0-dt, t0+dt), qrange=qrange)
 fig4 = hq.plot()
 ax = fig4.gca()
