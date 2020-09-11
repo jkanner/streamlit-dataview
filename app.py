@@ -60,7 +60,17 @@ else:
 #-- Choose detector as H1, L1, or V1
 detector = st.sidebar.selectbox('Detector', detectorlist)
 
-# Create a text element and let the reader know the data is loading.
+# -- Create sidebar for Q-transform controls
+st.subheader('Q-transform')
+st.sidebar.markdown('## Q-Transform Controls')
+dtboth = st.sidebar.slider('Time Range (seconds)', 0.1, 8.0, 1.0)  # min, max, default
+dt = dtboth / 2.0
+vmax = st.sidebar.slider('Colorbar Max Energy', 10, 500, 25)  # min, max, default
+qcenter = st.sidebar.slider('Q-value', 5, 120, 5)  # min, max, default
+qrange = (int(qcenter*0.8), int(qcenter*1.2))
+
+
+#-- Create a text element and let the reader know the data is loading.
 strain_load_state = st.text('Loading data...this may take a minute')
 try:
     strain = load_gw(t0, detector)
@@ -92,15 +102,6 @@ bp_data = white_data.bandpass(30, 400)
 fig3 = bp_data.crop(cropstart, cropend).plot()
 st.pyplot(fig3, clear_figure=True)
 
-st.subheader('Q-transform')
-
-st.sidebar.markdown('## Q-Transform Controls')
-dtboth = st.sidebar.slider('Time Range (seconds)', 0.1, 8.0, 1.0)  # min, max, default
-dt = dtboth / 2.0
-vmax = st.sidebar.slider('Colorbar Max Energy', 10, 500, 25)  # min, max, default
-
-qcenter = st.sidebar.slider('Q-value', 5, 120, 5)  # min, max, default
-qrange = (int(qcenter*0.8), int(qcenter*1.2))
 
 
 hq = strain.q_transform(outseg=(t0-dt, t0+dt), qrange=qrange)
