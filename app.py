@@ -19,7 +19,7 @@ st.title('Gravitational Wave Quickview App')
 
 st.markdown("""
  * Use the menu at left to select data and set plot parameters
- * Learn more at https://gw-openscience.org
+ * Your plots will appear below
 """)
 
 @st.cache   #-- Magic command to cache data
