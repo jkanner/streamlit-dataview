@@ -81,8 +81,6 @@ else:
 #-- Choose detector as H1, L1, or V1
 detector = st.sidebar.selectbox('Detector', detectorlist)
 
-
-
 # -- Create sidebar for plot controls
 st.sidebar.markdown('## Set Plot Parameters')
 dtboth = st.sidebar.slider('Time Range (seconds)', 0.1, 8.0, 1.0)  # min, max, default
@@ -91,8 +89,6 @@ dt = dtboth / 2.0
 st.sidebar.markdown('#### Whitened and band-passed data')
 whiten = st.sidebar.checkbox('Whiten?', value=True)
 freqrange = st.sidebar.slider('Band-pass frequency range (Hz)', min_value=10, max_value=2000, value=(30,400))
-
-
 
 
 # -- Create sidebar for Q-transform controls
