@@ -10,6 +10,7 @@ from gwosc import datasets
 from gwosc.api import fetch_event_json
 
 from copy import deepcopy
+import base64
 
 # -- Default detector list
 detectorlist = ['H1','L1', 'V1']
@@ -80,10 +81,22 @@ else:
 #-- Choose detector as H1, L1, or V1
 detector = st.sidebar.selectbox('Detector', detectorlist)
 
-# -- Create sidebar for Q-transform controls
+
+
+# -- Create sidebar for plot controls
 st.sidebar.markdown('## Set Plot Parameters')
 dtboth = st.sidebar.slider('Time Range (seconds)', 0.1, 8.0, 1.0)  # min, max, default
 dt = dtboth / 2.0
+
+st.sidebar.markdown('#### Whitened and band-passed data')
+whiten = st.sidebar.checkbox('Whiten?', value=True)
+freqrange = st.sidebar.slider('Band-pass frequency range (Hz)', min_value=10, max_value=2000, value=(30,400))
+
+
+
+
+# -- Create sidebar for Q-transform controls
+st.sidebar.markdown('#### Q-tranform plot')
 vmax = st.sidebar.slider('Colorbar Max Energy', 10, 500, 25)  # min, max, default
 qcenter = st.sidebar.slider('Q-value', 5, 120, 5)  # min, max, default
 qrange = (int(qcenter*0.8), int(qcenter*1.2))
@@ -118,11 +131,25 @@ st.pyplot(fig1, clear_figure=True)
 
 # -- Try whitened and band-passed plot
 # -- Whiten and bandpass data
-st.subheader('Whitened and Bandbassed Data')
-white_data = strain.whiten()
-bp_data = white_data.bandpass(30, 400)
-fig3 = bp_data.crop(cropstart, cropend).plot()
+st.subheader('Whitened and Band-passed Data')
+
+if whiten:
+    white_data = strain.whiten()
+    bp_data = white_data.bandpass(freqrange[0], freqrange[1])
+else:
+    bp_data = strain.bandpass(freqrange[0], freqrange[1])
+
+bp_cropped = bp_data.crop(cropstart, cropend)
+fig3 = bp_cropped.plot()
 st.pyplot(fig3, clear_figure=True)
+
+# -- Allow data download
+download = {'Time':bp_cropped.times, 'Strain':bp_cropped.value}
+df = pd.DataFrame(download)
+csv = df.to_csv(index=False)
+b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
+href = f'<a href="data:file/csv;base64,{b64}">Download Data as CSV File</a>'
+st.markdown(href, unsafe_allow_html=True)
 
 
 st.subheader('Q-transform')
