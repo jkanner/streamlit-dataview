@@ -12,6 +12,22 @@ from gwosc.api import fetch_event_json
 from copy import deepcopy
 import base64
 
+# Use the non-interactive Agg backend, which is recommended as a
+# thread-safe backend.
+# See https://matplotlib.org/3.3.2/faq/howto_faq.html#working-with-threads.
+import matplotlib as mpl
+mpl.use("agg")
+
+##############################################################################
+# Workaround for the limited multi-threading support in matplotlib.
+# Per the docs, we will avoid using `matplotlib.pyplot` for figures:
+# https://matplotlib.org/3.3.2/faq/howto_faq.html#how-to-use-matplotlib-in-a-web-application-server.
+# Moreover, we will guard all operations on the figure instances by the
+# class-level lock in the Agg backend.
+##############################################################################
+from matplotlib.backends.backend_agg import RendererAgg
+_lock = RendererAgg.lock
+
 # -- Default detector list
 detectorlist = ['H1','L1', 'V1']
 
@@ -120,9 +136,11 @@ cropend   = t0 + dt
 st.subheader('Raw data')
 center = int(t0)
 strain = deepcopy(strain_data)
-fig1 = strain.crop(cropstart, cropend).plot()
-#fig1 = cropped.plot()
-st.pyplot(fig1, clear_figure=True)
+
+with _lock:
+    fig1 = strain.crop(cropstart, cropend).plot()
+    #fig1 = cropped.plot()
+    st.pyplot(fig1, clear_figure=True)
 
 
 # -- Try whitened and band-passed plot
@@ -136,8 +154,10 @@ else:
     bp_data = strain.bandpass(freqrange[0], freqrange[1])
 
 bp_cropped = bp_data.crop(cropstart, cropend)
-fig3 = bp_cropped.plot()
-st.pyplot(fig3, clear_figure=True)
+
+with _lock:
+    fig3 = bp_cropped.plot()
+    st.pyplot(fig3, clear_figure=True)
 
 # -- Allow data download
 download = {'Time':bp_cropped.times, 'Strain':bp_cropped.value}
@@ -150,13 +170,15 @@ st.markdown(href, unsafe_allow_html=True)
 
 st.subheader('Q-transform')
 hq = strain.q_transform(outseg=(t0-dt, t0+dt), qrange=qrange)
-fig4 = hq.plot()
-ax = fig4.gca()
-fig4.colorbar(label="Normalised energy", vmax=vmax, vmin=0)
-ax.grid(False)
-ax.set_yscale('log')
-ax.set_ylim(bottom=15)
-st.pyplot(fig4, clear_figure=True)
+
+with _lock:
+    fig4 = hq.plot()
+    ax = fig4.gca()
+    fig4.colorbar(label="Normalised energy", vmax=vmax, vmin=0)
+    ax.grid(False)
+    ax.set_yscale('log')
+    ax.set_ylim(bottom=15)
+    st.pyplot(fig4, clear_figure=True)
 
 
 
