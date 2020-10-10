@@ -77,6 +77,7 @@ else:
     detectorlist = list(datasets.event_detectors(chosen_event))
     detectorlist.sort()
     st.subheader(chosen_event)
+    st.write('GPS:', t0)
     
     # -- Experiment to display masses
     try:
