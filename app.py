@@ -169,7 +169,7 @@ href = f'<a href="data:file/csv;base64,{b64}">Download Data as CSV File</a>'
 st.markdown(href, unsafe_allow_html=True)
 
 
-st.subheader('Q-transform')
+st.subheader('Q-transform ([Time-frequency plot](https://labcit.ligo.caltech.edu/~jkanner/aapt/web/math.html#tfplot))')
 hq = strain.q_transform(outseg=(t0-dt, t0+dt), qrange=qrange)
 
 with _lock:
