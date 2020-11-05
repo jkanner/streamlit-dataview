@@ -1,4 +1,4 @@
-streamlit==0.67.0
+streamlit==0.70.0
 gwpy
 matplotlib
 numpy

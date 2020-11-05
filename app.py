@@ -28,11 +28,18 @@ mpl.use("agg")
 from matplotlib.backends.backend_agg import RendererAgg
 _lock = RendererAgg.lock
 
+
+# -- Set page config
+apptitle = 'GW Quickview'
+
+st.set_page_config(page_title=apptitle, page_icon=":eyeglasses:")
+
+
 # -- Default detector list
 detectorlist = ['H1','L1', 'V1']
 
 # Title the app
-st.title('Gravitational Wave Quickview App')
+st.title('Gravitational Wave Quickview')
 
 st.markdown("""
  * Use the menu at left to select data and set plot parameters
