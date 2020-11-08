@@ -34,7 +34,6 @@ apptitle = 'GW Quickview'
 
 st.set_page_config(page_title=apptitle, page_icon=":eyeglasses:")
 
-
 # -- Default detector list
 detectorlist = ['H1','L1', 'V1']
 
@@ -176,7 +175,8 @@ href = f'<a href="data:file/csv;base64,{b64}">Download Data as CSV File</a>'
 st.markdown(href, unsafe_allow_html=True)
 
 
-st.subheader('Q-transform ([Time-frequency plot](https://labcit.ligo.caltech.edu/~jkanner/aapt/web/math.html#tfplot))')
+st.subheader('Q-transform')
+
 hq = strain.q_transform(outseg=(t0-dt, t0+dt), qrange=qrange)
 
 with _lock:
@@ -188,6 +188,27 @@ with _lock:
     ax.set_ylim(bottom=15)
     st.pyplot(fig4, clear_figure=True)
 
+
+with st.beta_expander("Show notes on Q-transform"):
+
+    st.markdown("""
+A Q-transform plot shows how a signal’s frequency changes with time.
+
+ * The x-axis shows time
+ * The y-axis shows frequency
+
+The color scale shows the amount of “energy” or “signal power” in each time-frequency pixel.
+
+A parameter called “Q” refers to the quality factor.  A higher quality factor corresponds to a larger number of cycles in each time-frequency pixel.  
+
+For gravitational-wave signals, binary black holes are most clear with lower Q values (Q = 5-20), where binary neutron star mergers work better with higher Q values (Q = 80 - 120).
+
+See also:
+
+ * [GWpy q-transform](https://gwpy.github.io/docs/stable/examples/timeseries/qscan.html)
+ * [Reading Time-frequency plots](https://labcit.ligo.caltech.edu/~jkanner/aapt/web/math.html#tfplot)
+ * [Shourov Chatterji PhD Thesis](https://dspace.mit.edu/handle/1721.1/34388)
+""")
 
 
 st.subheader("About this app")
