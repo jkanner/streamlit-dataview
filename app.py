@@ -174,6 +174,16 @@ b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversi
 href = f'<a href="data:file/csv;base64,{b64}">Download Data as CSV File</a>'
 st.markdown(href, unsafe_allow_html=True)
 
+# -- Notes on whitening
+with st.beta_expander("See notes"):
+    st.markdown("""
+ * Whitening is a process that re-weights a signal, so that all frequency bins have a nearly equal amount of noise. 
+ * A band-pass filter uses both a low frequency cutoff and a high frequency cutoff, and only passes signals in the frequency band between these values.
+
+See also:
+ * [Signal Processing Tutorial](https://share.streamlit.io/jkanner/streamlit-audio/main/app.py)
+""")
+
 
 st.subheader('Q-transform')
 
@@ -189,7 +199,7 @@ with _lock:
     st.pyplot(fig4, clear_figure=True)
 
 
-with st.beta_expander("Show notes on Q-transform"):
+with st.beta_expander("See notes"):
 
     st.markdown("""
 A Q-transform plot shows how a signal’s frequency changes with time.
