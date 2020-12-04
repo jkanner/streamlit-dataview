@@ -227,6 +227,7 @@ This app displays data from LIGO, Virgo, and GEO downloaded from
 the Gravitational Wave Open Science Center at https://gw-openscience.org .
 
 
-You can see how this works in the [Quickview Jupyter Notebook](https://github.com/losc-tutorial/quickview)
+You can see how this works in the [Quickview Jupyter Notebook](https://github.com/losc-tutorial/quickview) or 
+[see the code](https://github.com/jkanner/streamlit-dataview).
 
 """)
