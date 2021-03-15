@@ -45,7 +45,7 @@ st.markdown("""
  * Your plots will appear below
 """)
 
-@st.cache   #-- Magic command to cache data
+@st.cache(ttl=3600, max_entries=10)   #-- Magic command to cache data
 def load_gw(t0, detector):
     strain = TimeSeries.fetch_open_data(detector, t0-14, t0+14, cache=False)
     return strain
