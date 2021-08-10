@@ -12,6 +12,8 @@ from gwosc.api import fetch_event_json
 from copy import deepcopy
 import base64
 
+from helper import make_audio_file
+
 # Use the non-interactive Agg backend, which is recommended as a
 # thread-safe backend.
 # See https://matplotlib.org/3.3.2/faq/howto_faq.html#working-with-threads.
@@ -46,8 +48,8 @@ st.markdown("""
 """)
 
 @st.cache(ttl=3600, max_entries=10)   #-- Magic command to cache data
-def load_gw(t0, detector):
-    strain = TimeSeries.fetch_open_data(detector, t0-14, t0+14, cache=False)
+def load_gw(t0, detector, fs=4096):
+    strain = TimeSeries.fetch_open_data(detector, t0-14, t0+14, sample_rate = fs, cache=False)
     return strain
 
 st.sidebar.markdown("## Select Data Time and Detector")
@@ -64,6 +66,7 @@ eventlist.sort()
 select_event = st.sidebar.selectbox('How do you want to find data?',
                                     ['By event name', 'By GPS'])
 
+
 if select_event == 'By GPS':
     # -- Set a GPS time:        
     str_t0 = st.sidebar.text_input('GPS Time', '1126259462.4')    # -- GW150914
@@ -73,12 +76,13 @@ if select_event == 'By GPS':
     Example times in the H1 detector:
     * 1126259462.4    (GW150914) 
     * 1187008882.4    (GW170817) 
-    * 933200215       (hardware injection)
+    * 1128667463.0    (hardware injection)
     * 1132401286.33   (Koi Fish Glitch) 
     """)
 
 else:
     chosen_event = st.sidebar.selectbox('Select Event', eventlist)
+    #st.write(help(datasets.event_gps))
     t0 = datasets.event_gps(chosen_event)
     detectorlist = list(datasets.event_detectors(chosen_event))
     detectorlist.sort()
@@ -104,6 +108,15 @@ else:
 #-- Choose detector as H1, L1, or V1
 detector = st.sidebar.selectbox('Detector', detectorlist)
 
+# -- Select for high sample rate data
+fs = 4096
+maxband = 2000
+high_fs = st.sidebar.checkbox('Full sample rate data')
+if high_fs:
+    fs = 16384
+    maxband = 8000
+
+
 # -- Create sidebar for plot controls
 st.sidebar.markdown('## Set Plot Parameters')
 dtboth = st.sidebar.slider('Time Range (seconds)', 0.1, 8.0, 1.0)  # min, max, default
@@ -111,7 +124,7 @@ dt = dtboth / 2.0
 
 st.sidebar.markdown('#### Whitened and band-passed data')
 whiten = st.sidebar.checkbox('Whiten?', value=True)
-freqrange = st.sidebar.slider('Band-pass frequency range (Hz)', min_value=10, max_value=2000, value=(30,400))
+freqrange = st.sidebar.slider('Band-pass frequency range (Hz)', min_value=10, max_value=maxband, value=(30,400))
 
 
 # -- Create sidebar for Q-transform controls
@@ -120,11 +133,10 @@ vmax = st.sidebar.slider('Colorbar Max Energy', 10, 500, 25)  # min, max, defaul
 qcenter = st.sidebar.slider('Q-value', 5, 120, 5)  # min, max, default
 qrange = (int(qcenter*0.8), int(qcenter*1.2))
 
-
 #-- Create a text element and let the reader know the data is loading.
 strain_load_state = st.text('Loading data...this may take a minute')
 try:
-    strain_data = load_gw(t0, detector)
+    strain_data = load_gw(t0, detector, fs)
 except:
     st.text('Data load failed.  Try a different time and detector pair.')
     st.text('Problems can be reported to gwosc@igwn.org')
@@ -171,11 +183,15 @@ download = {'Time':bp_cropped.times, 'Strain':bp_cropped.value}
 df = pd.DataFrame(download)
 csv = df.to_csv(index=False)
 b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-href = f'<a href="data:file/csv;base64,{b64}">Download Data as CSV File</a>'
+fn =  detector + '-STRAIN' + '-' + str(int(cropstart)) + '-' + str(int(cropend-cropstart)) + '.csv'
+href = f'<a href="data:file/csv;base64,{b64}" download="{fn}">Download Data as CSV File</a>'
 st.markdown(href, unsafe_allow_html=True)
 
+# -- Make audio file
+st.audio(make_audio_file(bp_cropped), format='audio/wav')
+
 # -- Notes on whitening
-with st.beta_expander("See notes"):
+with st.expander("See notes"):
     st.markdown("""
  * Whitening is a process that re-weights a signal, so that all frequency bins have a nearly equal amount of noise. 
  * A band-pass filter uses both a low frequency cutoff and a high frequency cutoff, and only passes signals in the frequency band between these values.
@@ -199,7 +215,7 @@ with _lock:
     st.pyplot(fig4, clear_figure=True)
 
 
-with st.beta_expander("See notes"):
+with st.expander("See notes"):
 
     st.markdown("""
 A Q-transform plot shows how a signal’s frequency changes with time.
