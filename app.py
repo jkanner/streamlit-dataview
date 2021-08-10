@@ -76,7 +76,7 @@ if select_event == 'By GPS':
     Example times in the H1 detector:
     * 1126259462.4    (GW150914) 
     * 1187008882.4    (GW170817) 
-    * 933200215       (hardware injection)
+    * 1128667463.0    (hardware injection)
     * 1132401286.33   (Koi Fish Glitch) 
     """)
 
