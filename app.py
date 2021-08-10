@@ -110,8 +110,11 @@ detector = st.sidebar.selectbox('Detector', detectorlist)
 
 # -- Select for high sample rate data
 fs = 4096
+maxband = 2000
 high_fs = st.sidebar.checkbox('Full sample rate data')
-if high_fs: fs = 16384
+if high_fs:
+    fs = 16384
+    maxband = 8000
 
 
 # -- Create sidebar for plot controls
@@ -121,7 +124,7 @@ dt = dtboth / 2.0
 
 st.sidebar.markdown('#### Whitened and band-passed data')
 whiten = st.sidebar.checkbox('Whiten?', value=True)
-freqrange = st.sidebar.slider('Band-pass frequency range (Hz)', min_value=10, max_value=2000, value=(30,400))
+freqrange = st.sidebar.slider('Band-pass frequency range (Hz)', min_value=10, max_value=maxband, value=(30,400))
 
 
 # -- Create sidebar for Q-transform controls
