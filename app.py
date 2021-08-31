@@ -141,9 +141,8 @@ strain_load_state = st.text('Loading data...this may take a minute')
 try:
     strain_data = load_gw(t0, detector, fs)
 except:
-    st.text('Data load failed.  Try a different time and detector pair.')
-    st.text('Problems can be reported to gwosc@igwn.org')
-    raise st.ScriptRunner.StopException
+    st.warning('Data are not available for this time.  Please try a different time and detector pair.')
+    st.stop()
     
 strain_load_state.text('Loading data...done!')
 
