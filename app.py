@@ -52,20 +52,26 @@ def load_gw(t0, detector, fs=4096):
     strain = TimeSeries.fetch_open_data(detector, t0-14, t0+14, sample_rate = fs, cache=False)
     return strain
 
+@st.cache(ttl=3600, max_entries=10)   #-- Magic command to cache data
+def get_eventlist():
+    allevents = datasets.find_datasets(type='events')
+    eventset = set()
+    for ev in allevents:
+        name = fetch_event_json(ev)['events'][ev]['commonName']
+        if name[0:2] == 'GW':
+            eventset.add(name)
+    eventlist = list(eventset)
+    eventlist.sort()
+    return eventlist
+    
 st.sidebar.markdown("## Select Data Time and Detector")
 
 # -- Get list of events
-# find_datasets(catalog='GWTC-1-confident',type='events')
-eventlist = datasets.find_datasets(type='events')
-eventlist = [name.split('-')[0] for name in eventlist if name[0:2] == 'GW']
-eventset = set([name for name in eventlist])
-eventlist = list(eventset)
-eventlist.sort()
+eventlist = get_eventlist()
 
 #-- Set time by GPS or event
 select_event = st.sidebar.selectbox('How do you want to find data?',
                                     ['By event name', 'By GPS'])
-
 
 if select_event == 'By GPS':
     # -- Set a GPS time:        
@@ -82,7 +88,6 @@ if select_event == 'By GPS':
 
 else:
     chosen_event = st.sidebar.selectbox('Select Event', eventlist)
-    #st.write(help(datasets.event_gps))
     t0 = datasets.event_gps(chosen_event)
     detectorlist = list(datasets.event_detectors(chosen_event))
     detectorlist.sort()
@@ -95,14 +100,12 @@ else:
         for name, nameinfo in jsoninfo['events'].items():        
             st.write('Mass 1:', nameinfo['mass_1_source'], 'M$_{\odot}$')
             st.write('Mass 2:', nameinfo['mass_2_source'], 'M$_{\odot}$')
-            #st.write('Distance:', int(nameinfo['luminosity_distance']), 'Mpc')
             st.write('Network SNR:', int(nameinfo['network_matched_filter_snr']))
             eventurl = 'https://gw-osc.org/eventapi/html/event/{}'.format(chosen_event)
             st.markdown('Event page: {}'.format(eventurl))
             st.write('\n')
     except:
         pass
-
 
     
 #-- Choose detector as H1, L1, or V1
