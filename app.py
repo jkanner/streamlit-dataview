@@ -47,12 +47,12 @@ st.markdown("""
  * Your plots will appear below
 """)
 
-@st.cache(max_entries=5)   #-- Magic command to cache data
+@st.cache_data(max_entries=5)   #-- Magic command to cache data
 def load_gw(t0, detector, fs=4096):
     strain = TimeSeries.fetch_open_data(detector, t0-14, t0+14, sample_rate = fs, cache=False)
     return strain
 
-@st.cache(max_entries=10)   #-- Magic command to cache data
+@st.cache_data(max_entries=10)   #-- Magic command to cache data
 def get_eventlist():
     allevents = datasets.find_datasets(type='events')
     eventset = set()
@@ -242,7 +242,7 @@ See also:
 st.subheader("About this app")
 st.markdown("""
 This app displays data from LIGO, Virgo, and GEO downloaded from
-the Gravitational Wave Open Science Center at https://gw-openscience.org .
+the Gravitational Wave Open Science Center at https://gwosc.org .
 
 
 You can see how this works in the [Quickview Jupyter Notebook](https://github.com/losc-tutorial/quickview) or 
