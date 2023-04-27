@@ -113,11 +113,11 @@ detector = st.sidebar.selectbox('Detector', detectorlist)
 
 # -- Select for high sample rate data
 fs = 4096
-maxband = 2000
+maxband = 1200
 high_fs = st.sidebar.checkbox('Full sample rate data')
 if high_fs:
     fs = 16384
-    maxband = 8000
+    maxband = 2000
 
 
 # -- Create sidebar for plot controls
