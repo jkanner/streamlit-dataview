@@ -4,4 +4,4 @@ gwpy==3.0.4
 matplotlib==3.5.3
 astropy==5.2.2
 numpy==1.23.5
-scipy==1.8.1
+scipy==1.10.0
