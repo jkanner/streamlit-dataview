@@ -1,4 +1,4 @@
-streamlit==1.21.0
+streamlit==1.30.0
 gwosc==0.7.1
 gwpy==3.0.4
 matplotlib==3.5.3
