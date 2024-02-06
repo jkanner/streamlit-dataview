@@ -101,7 +101,7 @@ else:
             st.write('Mass 1:', nameinfo['mass_1_source'], 'M$_{\odot}$')
             st.write('Mass 2:', nameinfo['mass_2_source'], 'M$_{\odot}$')
             st.write('Network SNR:', int(nameinfo['network_matched_filter_snr']))
-            eventurl = 'https://gw-osc.org/eventapi/html/event/{}'.format(chosen_event)
+            eventurl = 'https://gwosc.org/eventapi/html/event/{}'.format(chosen_event)
             st.markdown('Event page: {}'.format(eventurl))
             st.write('\n')
     except:
