@@ -1,6 +1,6 @@
 streamlit==1.30.0
 gwosc==0.7.1
-gwpy==3.0.4
+gwpy==3.0.8
 matplotlib==3.5.3
 astropy==5.3.3
 numpy==1.23.5
