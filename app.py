@@ -233,7 +233,7 @@ For gravitational-wave signals, binary black holes are most clear with lower Q v
 
 See also:
 
- * [GWpy q-transform](https://gwpy.github.io/docs/stable/examples/timeseries/qscan.html)
+ * [GWpy q-transform](https://gwpy.github.io/docs/latest/examples/timeseries/qscan/)
  * [Reading Time-frequency plots](https://labcit.ligo.caltech.edu/~jkanner/aapt/web/math.html#tfplot)
  * [Shourov Chatterji PhD Thesis](https://dspace.mit.edu/handle/1721.1/34388)
 """)
