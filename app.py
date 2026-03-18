@@ -68,11 +68,11 @@ eventlist = get_eventlist()
 
 #-- Set time by GPS or event
 select_event = st.sidebar.selectbox('How do you want to find data?',
-                                    ['By event name', 'By GPS'])
+                                    ['By event name', 'By GPS'], key='datatype')
 
 if select_event == 'By GPS':
     # -- Set a GPS time:        
-    str_t0 = st.sidebar.text_input('GPS Time', '1126259462.4')    # -- GW150914
+    str_t0 = st.sidebar.text_input('GPS Time', '1126259462.4', key='gpstime')    # -- GW150914
     t0 = float(str_t0)
 
     st.sidebar.markdown("""
@@ -84,7 +84,7 @@ if select_event == 'By GPS':
     """)
 
 else:
-    chosen_event = st.sidebar.selectbox('Select Event', eventlist)
+    chosen_event = st.sidebar.selectbox('Select Event', eventlist, key='eventchoice')
     t0 = datasets.event_gps(chosen_event)
     detectorlist = list(datasets.event_detectors(chosen_event))
     detectorlist.sort()
@@ -106,12 +106,12 @@ else:
 
     
 #-- Choose detector as H1, L1, or V1
-detector = st.sidebar.selectbox('Detector', detectorlist)
+detector = st.sidebar.selectbox('Detector', detectorlist, key='ifochoice')
 
 # -- Select for high sample rate data
 fs = 4096
 maxband = 1200
-high_fs = st.sidebar.checkbox('Full sample rate data')
+high_fs = st.sidebar.checkbox('Full sample rate data', key='samplerate')
 if high_fs:
     fs = 16384
     maxband = 2000
@@ -119,18 +119,18 @@ if high_fs:
 
 # -- Create sidebar for plot controls
 st.sidebar.markdown('## Set Plot Parameters')
-dtboth = st.sidebar.slider('Time Range (seconds)', 0.1, 8.0, 1.0)  # min, max, default
+dtboth = st.sidebar.slider('Time Range (seconds)', 0.1, 8.0, 1.0, key='timerange')  # min, max, default
 dt = dtboth / 2.0
 
 st.sidebar.markdown('#### Whitened and band-passed data')
 whiten = st.sidebar.checkbox('Whiten?', value=True)
-freqrange = st.sidebar.slider('Band-pass frequency range (Hz)', min_value=10, max_value=maxband, value=(30,400))
+freqrange = st.sidebar.slider('Band-pass frequency range (Hz)', min_value=10, max_value=maxband, value=(30,400), key='bandpass')
 
 
 # -- Create sidebar for Q-transform controls
 st.sidebar.markdown('#### Q-tranform plot')
-vmax = st.sidebar.slider('Colorbar Max Energy', 10, 500, 25)  # min, max, default
-qcenter = st.sidebar.slider('Q-value', 5, 120, 5)  # min, max, default
+vmax = st.sidebar.slider('Colorbar Max Energy', 10, 500, 25, key='colorrange')  # min, max, default
+qcenter = st.sidebar.slider('Q-value', 5, 120, 5, key='qvalue')  # min, max, default
 qrange = (int(qcenter*0.8), int(qcenter*1.2))
 
 #-- Create a text element and let the reader know the data is loading.
@@ -201,15 +201,17 @@ See also:
 
 st.subheader('Q-transform')
 
-hq = strain.q_transform(outseg=(t0-dt, t0+dt), qrange=qrange)
-
-fig4 = hq.plot()
-ax = fig4.gca()
-fig4.colorbar(label="Normalised energy", vmax=vmax, vmin=0)
-ax.grid(False)
-ax.set_yscale('log')
-ax.set_ylim(bottom=15)
-st.pyplot(fig4, clear_figure=True)
+try:
+    hq = strain.q_transform(outseg=(t0-dt, t0+dt), qrange=qrange)
+    fig4 = hq.plot()
+    ax = fig4.gca()
+    fig4.colorbar(label="Normalised energy", vmax=vmax, vmin=0)
+    ax.grid(False)
+    ax.set_yscale('log')
+    ax.set_ylim(bottom=15)
+    st.pyplot(fig4, clear_figure=True)
+except:
+    st.markdown("Unable to generate Q-transform for these data")
 
 with st.expander("See notes"):
 
