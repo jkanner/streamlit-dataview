@@ -1,7 +1,8 @@
-streamlit==1.37.0
-gwosc==0.7.1
-gwpy==3.0.8
-matplotlib==3.5.3
-astropy==5.3.3
-numpy==1.23.5
-scipy==1.10.0
+streamlit==1.55.0
+gwosc==0.8.1
+gwpy==4.0.1
+matplotlib==3.10.8
+astropy==7.2.0
+numpy==2.4.3
+scipy==1.17.1
+
