@@ -52,13 +52,13 @@ def load_gw(t0, detector, fs=4096):
 @st.cache_data(max_entries=10)   #-- Magic command to cache data
 def get_eventlist():
     allevents = datasets.find_datasets(type='events')
-    eventset = set()
-    for ev in allevents:
-        name = fetch_event_json(ev)['events'][ev]['commonName']
-        if name[0:2] == 'GW':
-            eventset.add(name)
-    eventlist = list(eventset)
-    eventlist.sort()
+
+    # Drop the version number and filter for GW events
+    commonev = [ev.split('-')[0] for ev in allevents if ev.startswith("GW")]
+
+    # Drop duplicates and sort
+    eventlist = list(set(commonev))
+    eventlist.sort()    
     return eventlist
     
 st.sidebar.markdown("## Select Data Time and Detector")
